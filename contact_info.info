@@ -1,0 +1,8 @@
+name = Contact Info
+description = Provides the ability to store contact information as site variables
+configure = admin/config/system/contact_info
+core = 7.x
+
+files[] = contact_info.module
+
+stylesheets[all][] = css/contact_info.css

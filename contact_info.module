@@ -1,0 +1,212 @@
+<?php
+
+/**
+ * implement hook_block_info
+ */
+function contact_info_block_info() {
+    
+  $blocks['contact_info_contact_menu'] = array(
+    'info' => t('Contact Menu'),
+    'region' => BLOCK_REGION_NONE,
+    'status' => TRUE,
+    'weight' => 0,
+  );
+  $blocks['contact_info_contact_details'] = array(
+    'info' => t('Contact Details'),
+    'region' => BLOCK_REGION_NONE,
+    'status' => TRUE,
+    'weight' => 0,
+  );
+
+  return $blocks;
+}
+
+/**
+ * implement hook_block_view()
+ */
+function contact_info_block_view($delta = '')
+{
+  $block = array();
+  $vars['phone_number'] = variable_get('contact_info_phone_number', '');
+  $vars['phone_number_url'] = 'tel:'.str_replace(array('+',' ','(',')','-'), '', $vars['phone_number']);
+  $vars['fax_number'] = variable_get('contact_info_fax_number', '');
+  $vars['fax_number_url'] = 'tel:'.str_replace(array(' ','(',')','-'), '', $vars['fax_number']);
+  $address = '';
+  if( $street_address_line_1 = variable_get('contact_info_address_street_address_line_1', '') ){
+    $address .= $street_address_line_1 . '<br/>';
+  }
+  if( $street_address_line_2 = variable_get('contact_info_address_street_address_line_2', '') ){
+    $address .= $street_address_line_2 . '<br/>';
+  }
+  if( $street_address_line_3 = variable_get('contact_info_address_street_address_line_3', '') ){
+    $address .= $street_address_line_3 . '<br/>';
+  }
+  if( $suburb = variable_get('contact_info_address_suburb', '') ){
+    $address .= $suburb . '<br/>';
+  }
+  if( $state = variable_get('contact_info_address_state', '') ){
+    $address .= $state . ' ';
+  }
+  if( $postcode = variable_get('contact_info_address_postcode', '') ){
+    $address .= $postcode;
+  }
+  $vars['address'] = $address;
+
+  switch($delta){
+    case 'contact_info_contact_menu':
+      $block['subject'] = t('Contact Menu');
+      //$block['content'] = tour_finder_theme_form($form);
+      $block['content'] = theme('contact_info_contact_menu', $vars);
+      break;
+    case 'contact_info_phone_number':
+      $block['subject'] = t('Phone Number');
+      //$block['content'] = tour_finder_theme_form($form);
+      $block['content'] = theme('contact_info_phone_number', $vars);
+      break;
+    case 'contact_info_contact_details':
+      $block['subject'] = t('Contact Details');
+      //$block['content'] = tour_finder_theme_form($form);
+      $block['content'] = theme('contact_info_contact_details', $vars);
+      break;
+    case 'contact_info_contact_page_block':
+      $block['subject'] = t('Contact Details');
+      //$block['content'] = tour_finder_theme_form($form);
+      $block['content'] = theme('contact_info_contact_page_block', $vars);
+      break;
+  }
+  /*
+   * Return the block
+   */
+  return $block;
+}
+
+/**
+ * Implements hook_form()
+ */
+function contact_info_form($form, &$form_state) {
+  $form = array();
+  
+  $form['contact_info_phone_number'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Phone Number',
+    '#attributes' => array(
+      'placeholder' => 'e.g. (08) 8123 4567 or 0412 345 678',
+    ),
+    '#default_value' => variable_get('contact_info_phone_number', ''),
+    '#size' => 40,
+    '#maxlength' => 14,
+    '#description' => t("The phone number to be used across the site."),
+    '#required' => FALSE,
+  );
+  
+  $form['contact_info_fax_number'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Fax Number',
+    '#attributes' => array(
+      'placeholder' => 'e.g. (08) 8123 4567',
+    ),
+    '#default_value' => variable_get('contact_info_fax_number', ''),
+    '#size' => 40,
+    '#maxlength' => 14,
+    '#description' => t("The fax number to be used across the site."),
+    '#required' => FALSE,
+  );
+  
+  $form['contact_info_address'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Address',
+  );
+  
+  $address_fields = array( 
+    array(
+      'name' => 'street_address_line_1',
+      'label' => 'Street Address Line 1',
+    ),
+    array(
+      'name' => 'street_address_line_2',
+      'label' => 'Street Address Line 2',
+    ),
+    array(
+      'name' => 'street_address_line_3',
+      'label' => 'Street Address Line 3',
+    ),
+    array(
+      'name' => 'suburb',
+      'label' => 'City / Suburb',
+    ),
+    array(
+      'name' => 'state',
+      'label' => 'State',
+    ),
+    array(
+      'name' => 'postcode',
+      'label' => 'Postcode',
+    ),
+  );
+  foreach($address_fields as $address_field) {
+    $form['contact_info_address']['contact_info_address_' . $address_field['name']] = array(
+      '#type' => 'textfield',
+      '#title' => $address_field['label'],
+      '#default_value' => variable_get('contact_info_address_' . $address_field['name'], ''),
+      '#size' => 40,
+      '#maxlength' => 255,
+      '#required' => FALSE,
+    );
+  }
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implements hook_menu()
+ */
+function contact_info_menu() {
+
+  $items = array();
+
+  $items['admin/config/system/contact_info'] = array(
+    'title' => 'Contact Information',
+    'description' => 'The contact information used across the site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('contact_info_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+   );
+
+  return $items;
+}
+
+/**
+ * Implementation of template_preprocess_page()
+ */
+function contact_info_preprocess_page(&$vars) {
+  /*
+   * Add contact details to theme vars
+   */
+  $vars['phone_number'] = variable_get('contact_info_phone_number', '');
+  $vars['phone_number_url'] = 'tel:'.str_replace(array(' ','(',')','-'), '', $vars['phone_number']);
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function contact_info_theme() {
+  $themes['contact_info_contact_menu'] = array(
+      'render_element' => 'content',
+      'template'  => 'contact-info--contact-menu',
+  );
+  $themes['contact_info_phone_number'] = array(
+      'render_element' => 'content',
+      'template'  => 'contact-info--phone-number',
+  );
+  $themes['contact_info_contact_details'] = array(
+      'render_element' => 'content',
+      'template'  => 'contact-info--contact-details',
+  );
+  $themes['contact_info_contact_page_block'] = array(
+      'render_element' => 'content',
+      'template'  => 'contact-info--contact-page-block',
+  );
+  
+  return $themes;
+}

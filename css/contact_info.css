@@ -1,0 +1,18 @@
+#block-contact-info-contact-info-contact-details li {
+  margin: 8px 0; }
+#block-contact-info-contact-info-contact-details i {
+  display: inline-block;
+  height: 19px;
+  margin-right: 8px;
+  text-align: center;
+  vertical-align: middle;
+  width: 16px; }
+#block-contact-info-contact-info-contact-details a {
+  display: inline-block;
+  height: 19px;
+  line-height: 19px; }
+#block-contact-info-contact-info-contact-details p {
+  display: inline-block;
+  vertical-align: top; }
+
+/*# sourceMappingURL=contact_info.css.map */
